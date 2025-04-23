@@ -1,5 +1,6 @@
 package com.max.useframework.service;
 
+import com.max.spring.Autowired;
 import com.max.spring.Component;
 import com.max.spring.Scope;
 
@@ -11,5 +12,11 @@ import com.max.spring.Scope;
 
 @Component("demoService")
 @Scope("prototype")
-public class demoService {
+public class DemoService {
+
+    @Autowired
+    private BService bService;
+    public void testAutowired() {
+        System.out.println(bService);
+    }
 }

@@ -28,25 +28,29 @@ public class ApplicationContext {
 
         for(Map.Entry<String, BeanDefinition> entry : beanDefinitionMap.entrySet()){
             String beanName = entry.getKey();
-            Class clazz = entry.getValue().getClazz();
             String scope = entry.getValue().getScope();
             if(scope.equals("singleton")){
-                Object bean = createBean(entry.getValue());
+                Object bean = createBean(beanName, entry.getValue());
                 singleBeanMap.put(beanName, bean);
             }
         }
 
     }
 
-    public Object createBean(BeanDefinition beanDefinition){
+    public Object createBean(String beanName,BeanDefinition beanDefinition){
         Class clazz = beanDefinition.getClazz();
         try {
             Object instance = clazz.getDeclaredConstructor().newInstance();
 
-            for (Field field : instance.getClass().getDeclaredFields()){
+            for (Field field : clazz.getDeclaredFields()){
                 if (field.isAnnotationPresent(Autowired.class)) {
-
+                    Object bean = getBean(field.getName());
+                    field.setAccessible(true);
+                    field.set(instance, bean);
                 }
+            }
+            if(instance instanceof BeanNameAware){
+                ((BeanNameAware) instance).setBeanName(beanName);
             }
 
             return instance;
@@ -67,7 +71,7 @@ public class ApplicationContext {
                 Object o = singleBeanMap.get(beanName);
                 return o;
             } else {
-                Object bean = createBean(beanDefinition);
+                Object bean = createBean(beanName,beanDefinition);
                 return bean;
             }
         }
